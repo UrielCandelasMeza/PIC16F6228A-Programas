@@ -1,0 +1,44 @@
+#include <xc.h>
+
+#pragma config FOSC = INTOSCIO  
+#pragma config WDTE = OFF       
+#pragma config PWRTE = ON       
+#pragma config MCLRE = ON       
+#pragma config BOREN = OFF      
+#pragma config LVP = OFF        
+#pragma config CPD = OFF        
+#pragma config CP = OFF         
+
+#define _XTAL_FREQ 4000000 
+
+unsigned int duty_cycle = 512; 
+
+void PWM_Init(void);
+void PWM_Set_Duty(unsigned int duty);
+
+void main() {
+    CMCON = 0b00000111; 
+    
+    TRISB = 0b11110111;
+    TRISA = 0b11111111; 
+
+    PWM_Init();
+
+    while(1) {
+        PWM_Set_Duty(duty_cycle);
+        __delay_ms(100); 
+    }
+}
+
+void PWM_Init(void) {
+    T2CON = 0b00000100;    
+    PR2 = 249;             
+                           
+    CCP1CON = 0b00001100;  
+    CCPR1L = 0;            
+}
+
+void PWM_Set_Duty(unsigned int duty) {
+    CCPR1L = (duty >> 2);
+    CCP1CON = (CCP1CON & 0b11001111) | ((duty & 0b00000011) << 4);
+}
